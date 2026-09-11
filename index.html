@@ -639,7 +639,32 @@ window.gSkip = () => openApp(null);
 
 /* Cerrar sesión */
 window.logout = async () => { await sb.auth.signOut(); location.reload(); };
+window.saveNewPassword = async () => {
 
+    const pwd =
+      document.getElementById("newPassword").value;
+
+    if(pwd.length < 8){
+        alert("La contraseña debe tener al menos 8 caracteres.");
+        return;
+    }
+
+    const { error } =
+      await sb.auth.updateUser({
+          password: pwd
+      });
+
+    if(error){
+        alert(error.message);
+        return;
+    }
+
+    alert("Contraseña actualizada correctamente");
+
+    document
+      .getElementById("pwdModal")
+      .classList.add("hide");
+};
 /* Sesión inicial. Si hay un vínculo temporal (#t=...) se salta el login. */
 (async () => {
   if(/[#&]t=/.test(location.hash)) return openApp(null);
@@ -656,6 +681,19 @@ window.logout = async () => { await sb.auth.signOut(); location.reload(); };
     if(e.message === 'timeout') gmsg('Supabase no respondió. Verifica tu conexión o usa el modo demo.');
   }
   g('gLoad').classList.add('hide'); g('gLogin').classList.remove('hide');
+  const hash = location.hash;
+
+if (
+    hash.includes("type=recovery") ||
+    hash.includes("access_token")
+) {
+    const modal =
+        document.getElementById("pwdModal");
+
+    if (modal) {
+        modal.classList.remove("hide");
+    }
+}
   window.__authReady = true;          // habilita el envío del formulario
   if(session) openApp(session.user);
 })();
